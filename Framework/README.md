@@ -27,3 +27,23 @@ Most of the work that you will do (as a student) will be creating subclasses of 
 <script src="THREE/OrbitControls.js"></script>
 <script src="8-graphicspark.js" type="module"></script>
 ~~~~
+
+2. Because you need to have the objects when the `GrObject` is created, this can be a problem if you don't have the object immediately (for example, if you are loading an obj file). The best way to deal with this is to create a THREE `Group` object when the `GrObject` is created and then add the new object to the group. Even better: put a temporary object into the group, and replace it with the new object when it is loaded. Here is a simple example (using `sleep` rather than a real loader, but it's the same delayed execution thing). Beware of the non-lexical `this` (you can't use `this` in the deferred function). What this example does is create an Object that is a cube initially, but changes to a TorusKnot after 2 seconds.
+
+~~~~javascript
+export class BetterDelayTest extends GrObject {
+    constructor() {
+        let group = new T.Group();
+        super("Delay-Test", group);
+        this.group = group;
+        // make a cube that will be there temporarily
+        let tempCube = new T.Mesh(new T.BoxGeometry(), new T.MeshStandardMaterial());
+        group.add(tempCube);
+        // use sleep, rather than OBJ loader
+        sleep(2000).then(function() {
+            group.remove(tempCube);
+            group.add(new T.Mesh(new T.TorusKnotGeometry(), new T.MeshStandardMaterial({color:"purple"})));
+        });
+    }
+}
+~~~~
