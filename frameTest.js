@@ -16,24 +16,30 @@ import { SimpleGroundPlane } from "./Framework/GroundPlane.js";
 import { GrWorld } from "./Framework/GrWorld.js";
 import { GrCube } from "./Framework/SimpleObjects.js";
 import { spinY } from "./Framework/SimpleBehaviors.js";
-import { HingeCube } from "./Framework/TestObjects.js";
+import { HingeCube,DelayTest,BetterDelayTest,MaterialDelayTest } from "./Framework/TestObjects.js";
 import { AutoUI } from "./Framework/AutoUI.js";
 
 function test() {
     let world = new GrWorld();
 
-    world.add(new SimpleGroundPlane());
+    // world.add(spinY(new GrCube()));
 
-    world.camera.position.set(-5,5,10);
-    world.camera.lookAt(0,0,0);
-
-    world.add(spinY(new GrCube()));
-
+    /*
     let dc = new HingeCube();
     world.add(dc);
-
     dc.update([2,2,45,45]);
     let ui = new AutoUI(dc);
+    */
+
+    world.add(new DelayTest());
+    
+    let dt2 = new BetterDelayTest();
+    world.add(dt2);
+    dt2.group.position.x = -2;
+    dt2.group.position.z = -2;
+
+    let dt3 = new MaterialDelayTest();
+    world.add(dt3);
 
     function loop() {
         world.animate();

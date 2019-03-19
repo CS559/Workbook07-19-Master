@@ -71,3 +71,74 @@ export class HingeCube extends GrObject {
         this.g2.rotation.x = degreesToRadians(-paramValues[3]);
     }
 }
+
+
+// for faking deferred loading
+// from https://flaviocopes.com/javascript-sleep/
+const sleep = (milliseconds) => {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+};
+
+/**
+ * test for an object that is created slowly (like loading an OBJ)
+ * 
+ * the catch is that we need to have an object to install in the world
+ * (since we can't defer that), but we don't have "the" object
+ * 
+ * the trick: make a Group - when the deferred object finally arrives,
+ * stick it in the group
+ * 
+ * here, we fake OBJ loading with sleep
+ */
+export class DelayTest extends GrObject {
+    constructor() {
+        let group = new T.Group();
+        super("Delay-Test", group);
+        this.group = group;
+        // use sleep, rather than OBJ loader
+        sleep(1500).then(function() {
+            group.add(new T.Mesh(new T.TorusKnotGeometry(), new T.MeshStandardMaterial({color:"red"})));
+        });
+    }
+}
+  
+/**
+ * Better delayed object - put a proxy object in its place, and then remove it
+ */
+export class BetterDelayTest extends GrObject {
+    constructor() {
+        let group = new T.Group();
+        super("Delay-Test", group);
+        this.group = group;
+        // make a cube that will be there temporarily
+        let tempCube = new T.Mesh(new T.BoxGeometry(), new T.MeshStandardMaterial());
+        group.add(tempCube);
+        // use sleep, rather than OBJ loader
+        sleep(2000).then(function() {
+            group.remove(tempCube);
+            group.add(new T.Mesh(new T.TorusKnotGeometry(), new T.MeshStandardMaterial({color:"purple"})));
+        });
+    }
+}
+
+/**
+ * test for changing an object's material
+ */
+export class MaterialDelayTest extends GrObject {
+    constructor() {
+        let group = new T.Group();
+        super("Delay-Test", group);
+        this.material = new T.MeshStandardMaterial({color:"white"});
+        this.geometry = new T.TorusGeometry();
+        this.mesh = new T.Mesh(this.geometry,this.material);
+        let self=this;
+        group.add(this.mesh);
+        group.position.x = -3;
+        // use sleep, rather than OBJ loader
+        sleep(1000).then(function() {
+            // note: we can't use "this" because this isn't lexically scoped
+            self.material.setValues({color:"red"});
+            self.material.needsUpdate = true;
+        });
+    }
+}
